@@ -1,0 +1,91 @@
+NOUVEAUTÉS V2
+Interface avec cartes de marché, courbes récentes, indicateurs du portefeuille,
+statut clair par actif, entrée/stop/objectif et historique exportable en CSV.
+Signaux sur bougies de 5 min (au lieu de 1 h), contrôles toutes les 30 secondes.
+ACHAT SIMULÉ = achat fictif effectué par le programme, pas un ordre à passer.
+VENTE SIMULÉE = sortie fictive effectuée. ATTENDRE = aucune nouvelle entrée.
+POSITION EN COURS = suivre une position fictive déjà ouverte.
+Les signaux sont évalués une seule fois par bougie clôturée. Il n'y a donc
+pas nécessairement un achat toutes les 30 secondes ni toutes les 5 minutes.
+Les durées des positions dépendent du stop et de l'objectif, jusqu'à 72 h.
+Les trois critères restent affichés. Aucun score de probabilité inventé.
+Le graphique montre les 40 dernières clôtures de 5 min, pas des ticks.
+La valeur affichée sur chaque carte est le prix vendeur (ask), avant
+frais et glissement. Le résultat d'une position estime sa liquidation nette.
+
+INSTALLATION DE CETTE VERSION
+Ferme l'ancienne fenêtre, extrais ce ZIP dans un NOUVEAU dossier, puis lance
+LANCER_WINDOWS.bat. Garde ton ancien dossier pour conserver son historique.
+La V2 démarre un portefeuille distinct de 500 € fictifs ; les résultats de
+l'ancienne stratégie horaire ne sont pas mélangés avec ceux de la V2.
+Un échec réseau bloque le cycle entier ; nouvelle tentative automatique.
+Un échec de sauvegarde ne valide pas les opérations en mémoire.
+Le CSV est enregistré à côté du programme ; il contient les sorties clôturées.
+Les heures opened/closed du CSV sont des timestamps Unix en secondes.
+
+VALIDATION
+Calculs et transitions testés avec des données synthétiques. L'interface
+Windows et les données Kraken en direct restent à vérifier sur ton PC.
+La rentabilité n'a pas été démontrée. La fréquence accrue peut augmenter
+les coûts et les faux signaux. Pas de notifications sur téléphone dans cette V2.
+
+CRYPTO — VERSION 2, SIMULATION UNIQUEMENT
+
+INSTALLATION WINDOWS
+1. Installe Python 3 depuis https://www.python.org/downloads/windows/
+   Garde le composant Tcl/Tk et, si proposé, coche « Add Python to PATH ».
+2. Extrais entièrement le ZIP dans un dossier de ton PC.
+3. Double-clique sur LANCER_WINDOWS.bat. Aucun autre paquet à installer.
+4. Garde la fenêtre ouverte, le PC connecté et désactive sa mise en veille
+   pendant les périodes où tu souhaites surveiller.
+Sur Mac : installer Python depuis python.org puis lancer python3 algo.py.
+
+AUCUN DÉPÔT, COMPTE OU CLÉ API NÉCESSAIRE
+Ce logiciel ne sait pas envoyer d'ordre réel. Le portefeuille commence à
+500 € fictifs. Les positions sont ouvertes et fermées automatiquement DANS
+LA SIMULATION seulement. Les alertes sont visibles dans la fenêtre du PC,
+avec un son système selon tes réglages. Pas de notification téléphone en V1.
+Ne lance qu'une instance à la fois dans ce dossier.
+
+RÈGLES EXPÉRIMENTALES
+BTC/EUR puis ETH/EUR ; cours Kraken contrôlés toutes les 30 secondes.
+Signaux sur bougies de 5 minutes clôturées uniquement : moyenne des 20 clôtures > moyenne
+des 50 clôtures, clôture supérieure aux 20 plus hauts précédents et volume > 1,5 fois
+la moyenne des 20 volumes précédents. Une seule évaluation par bougie.
+Entrée refusée si éloignée de plus de 1 % de la clôture signal.
+Achat fictif à l'ask + 0,1 % ; sortie au bid - 0,1 %.
+Frais fixes supposés : 0,8 % par côté. Ils doivent être revérifiés avant
+chaque utilisation réelle et ne représentent pas tous les paliers Kraken.
+Stop à deux ATR (moyenne simple des 14 true ranges), au minimum 2 %.
+Objectif fixé pour un gain net théorique double de la perte au stop.
+Au maximum 100 € engagés par actif et 2,50 € de perte théorique au stop,
+frais compris. Ce risque n'est PAS un plafond garanti en cas de gap.
+Sortie au prochain contrôle si stop/objectif observé ou 72 h écoulées.
+Nouvelles entrées suspendues après une baisse observée de 10 % depuis
+le sommet du portefeuille. Les sorties restent actives.
+
+COMMENT LIRE LES RÉSULTATS
+Valeur nette = liquidités + valeur liquidative estimée des positions,
+frais et glissement de sortie compris. Baisse maximale mesurée uniquement
+aux contrôles. Le fichier simulation_v2.json conserve positions et historique.
+Ne le modifie pas pendant l'exécution. Pour recommencer, ferme le programme,
+puis déplace ce fichier dans un dossier d'archives (ne perds pas les résultats).
+
+LIMITES ESSENTIELLES
+C'est un prototype de suivi prospectif, pas une stratégie rentable démontrée
+ni un backtest. Les paramètres n'ont pas été validés hors échantillon.
+Un stop touché puis dépassé dans l'autre sens entre deux contrôles peut être
+manqué. PC éteint ou sans réseau : aucune surveillance, aucun rattrapage.
+Après interruption, les sorties utilisent le cours disponible à la reprise.
+Les estimations peuvent donc surestimer la performance. Les coûts réels,
+la profondeur du carnet, les exécutions partielles et la fiscalité ne sont
+pas intégralement modélisés. Aucune vente à découvert ni aucun levier.
+Une période gagnante, même plusieurs semaines, ne suffit pas à valider
+une stratégie. Ne transpose pas directement ces signaux en argent réel.
+
+SOURCES TECHNIQUES CONSULTÉES LE 12/09/2026
+https://docs.kraken.com/api-reference/market-data/get-ohlc-data
+https://docs.kraken.com/api-reference/market-data/get-ticker-information
+https://www.kraken.com/features/fee-schedule
+L'API OHLC renvoie au plus 720 bougies ; la dernière bougie non clôturée
+est exclue. Le programme utilise uniquement les points d'accès publics.
