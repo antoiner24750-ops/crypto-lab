@@ -2,7 +2,7 @@
 import copy, json, math, os, threading, time, urllib.request, urllib.parse
 from pathlib import Path
 
-CONFIG = dict(initial=200., leverage=10., margin=20., fee=.0005, slip=.0002,
+CONFIG = dict(initial=200., leverage=20., margin=20., fee=.0005, slip=.0002,
               maintenance=.005, liquidation_fee=.005, funding_8h=.0001,
               stop_fraction=.003, target_fraction=.006, max_hold=900, poll=5)
 PAIRS={'BTC/EUR':'XBTEUR','ETH/EUR':'ETHEUR'}
@@ -155,7 +155,7 @@ def step(original,quotes,now):
     p=s['position'];equity=s['cash'];position=None
     if p:
         v=valuation(p,quotes[p['asset']],now);equity+=v['returned']
-        position={**p,**v,'liquidation_estimate':liquidation(p,now),'remaining_seconds':max(0,CONFIG['max_hold']-(now-p['opened']))}
+        position={**p,**v,'leverage':p['notional']/p['margin'],'liquidation_estimate':liquidation(p,now),'remaining_seconds':max(0,CONFIG['max_hold']-(now-p['opened']))}
         markets[p['asset']]['action']='POSITION '+p['side']
         markets[p['asset']]['reason']='Sortie au stop, à l’objectif, à la liquidation ou après 15 min.'
     s['peak']=max(s['peak'],equity);s['drawdown']=max(s['drawdown'],1-equity/s['peak']);s['last_poll']=now

@@ -18,7 +18,7 @@ class CombinedHandler(server.Handler):
                    'background:#203754;color:#f5f8ff;text-decoration:none">Classique · 500 €</a>'
                    '<a href="/rapide" style="padding:10px 16px;border-radius:12px;'
                    'background:#153d3a;color:#5ee0b5;text-decoration:none;font-weight:700">'
-                   'Rapide ×10 · 200 € →</a></nav>')
+                   'Rapide ×20 · 200 € →</a></nav>')
             self._send_html(server.DASHBOARD.replace('<body>', '<body>'+nav, 1))
             return
         if path=='/rapide':
