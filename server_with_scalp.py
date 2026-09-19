@@ -11,6 +11,16 @@ if not hasattr(server,'Handler') or not callable(getattr(server,'main',None)):
 class CombinedHandler(server.Handler):
     def do_GET(self):
         path=urlparse(self.path).path.rstrip('/') or '/'
+        if path=='/':
+            nav = ('<nav aria-label="Simulations" style="max-width:1100px;margin:18px auto 0;'
+                   'padding:0 18px;display:flex;gap:12px;flex-wrap:wrap">'
+                   '<a href="/" aria-current="page" style="padding:10px 16px;border-radius:12px;'
+                   'background:#203754;color:#f5f8ff;text-decoration:none">Classique · 500 €</a>'
+                   '<a href="/rapide" style="padding:10px 16px;border-radius:12px;'
+                   'background:#153d3a;color:#5ee0b5;text-decoration:none;font-weight:700">'
+                   'Rapide ×10 · 200 € →</a></nav>')
+            self._send_html(server.DASHBOARD.replace('<body>', '<body>'+nav, 1))
+            return
         if path=='/rapide':
             data=(Path(__file__).parent/'scalp.html').read_bytes();content='text/html; charset=utf-8'
         elif path=='/api/rapide':
