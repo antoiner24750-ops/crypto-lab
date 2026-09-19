@@ -37,22 +37,33 @@ def api(endpoint,**params):
     return d['result']
 
 def check_rows(rows,now):
-    if len(rows)<22 or not 0<=now-(rows[-1][0]+60)<75:raise ValueError('Bougies 1 min périmées ou insuffisantes.')
+    if len(rows)<22:raise ValueError(f'Bougies insuffisantes : {len(rows)}/22.')
     for r in rows:
-        if len(r)!=7 or not all(math.isfinite(x) for x in r):raise ValueError('Bougie invalide.')
-        if min(r[1:6])<=0 or r[2]<max(r[1],r[3],r[4]) or r[3]>min(r[1],r[4]) or r[6]<0:raise ValueError('Prix/volume invalide.')
+        if len(r)!=7 or not all(math.isfinite(x) for x in r):raise ValueError('Bougie invalide : format ou nombre non fini.')
+        # VWAP (index 5) is not an OHLC price and is unused by the strategy.
+        # Allow a zero VWAP only when volume is zero; retain all OHLC checks.
+        stamp,op,hi,lo,cl,vwap,volume=r
+        if min(op,hi,lo,cl)<=0 or hi<max(op,lo,cl) or lo>min(op,cl):
+            raise ValueError(f'Prix OHLC invalide à {stamp:g} : O={op}, H={hi}, L={lo}, C={cl}.')
+        if volume<0 or vwap<0 or (volume>0 and vwap==0):
+            raise ValueError(f'Volume/VWAP invalide à {stamp:g} : volume={volume}, VWAP={vwap}.')
+    age=now-(rows[-1][0]+60)
+    if not 0<=age<75:raise ValueError(f'Bougies 1 min périmées : âge après clôture {age:.0f} s (limite 75 s).')
     if any(b[0]-a[0]!=60 for a,b in zip(rows[-22:-1],rows[-21:])):raise ValueError('Bougies discontinues.')
 
 class Feed:
     def __init__(self):self.cache={};self.bucket=None
     def read(self):
         start=time.time();bucket=int(start//60)
-        if bucket!=self.bucket:
+        if bucket!=self.bucket or not self.cache or any(not 0<=start-(r[-1][0]+60)<75 for r in self.cache.values()):
             fresh={}
             for n,pair in PAIRS.items():
                 d=api('OHLC',pair=pair,interval=1)
                 rows=next(v for k,v in d.items() if k!='last')
                 fresh[n]=[[float(x) for x in r[:7]] for r in rows[:-1]][-60:]
+            for name, rows in fresh.items():
+                try:check_rows(rows,time.time())
+                except ValueError as exc:raise ValueError(name+' : '+str(exc)) from exc
             self.cache=fresh;self.bucket=bucket
         # One ticker request for both markets; keys are explicit internal Kraken names.
         ticks=api('Ticker',pair=','.join(PAIRS.values()))
